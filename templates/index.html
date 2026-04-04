@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YolPayı — Kentsel Araç Paylaşım Sistemi</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+
+
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-bg">
+    <div class="auth-orb orb1"></div>
+    <div class="auth-orb orb2"></div>
+    <div class="auth-orb orb3"></div>
+  </div>
+  <div class="auth-card">
+
+    <div id="form-login" class="auth-form active">
+      <div class="auth-logo">Yol<span>Payı</span></div>
+      <div class="auth-subtitle">Araç Paylaşım Analiz Sistemi</div>
+      <h2 class="auth-title">Giriş Yap</h2>
+      <div class="form-group">
+        <label>E-posta</label>
+        <input type="email" id="login-email" class="form-input" placeholder="mail@adresiniz.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Şifre</label>
+        <input type="password" id="login-password" class="form-input" placeholder="••••••••">
+      </div>
+      <div id="login-error" class="auth-error" style="display:none"></div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()">Giriş Yap</button>
+      <div class="auth-switch">Hesabınız yok mu? <a onclick="showRegister()">Kayıt Ol</a></div>
+    </div>
+
+    
+    <div id="form-register" class="auth-form">
+      <div class="auth-logo">Yol<span>Payı</span></div>
+      <h2 class="auth-title">Hesap Oluştur</h2>
+      <div class="form-group">
+        <label>Ad Soyad</label>
+        <input type="text" id="reg-name" class="form-input" placeholder="Adınız Soyadınız">
+      </div>
+      <div class="form-group">
+        <label>E-posta</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="mail@adresiniz.com">
+      </div>
+      <div class="form-group">
+        <label>Şifre (en az 6 karakter)</label>
+        <input type="password" id="reg-password" class="form-input" placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label>Rol</label>
+        <select id="reg-role" class="form-input">
+          <option value="driver">🚗 Sürücü — Yolculuk teklif eder</option>
+          <option value="passenger">👤 Yolcu — Yolculuk arar</option>
+          <option value="urban">🏙️ Kent Yöneticisi — Verileri analiz eder</option>
+        </select>
+      </div>
+      <div id="reg-error" class="auth-error" style="display:none"></div>
+      <button class="btn btn-primary btn-full" onclick="doRegister()">Hesabımı Oluştur</button>
+      <div class="auth-switch">Zaten kayıtlı mısınız? <a onclick="showLogin()">Giriş Yap</a></div>
+    </div>
+
+  </div>
+</div>
+
+
+<div id="app-screen" class="app-wrapper" style="display:none">
+
+  
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-mark">Yol<span>Payı</span></div>
+      <div class="logo-sub">Kentsel Araç Paylaşımı · Gümüşhane</div>
+    </div>
+    <nav class="nav" id="nav-menu"></nav>
+    <div class="sidebar-footer">
+      <div class="user-card" id="sidebar-user"></div>
+      <button class="btn-logout" onclick="doLogout()">🚪 Çıkış Yap</button>
+    </div>
+  </aside>
+
+  
+  <main class="main" id="main-area">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="topbar-title" id="page-title">Gösterge Paneli</div>
+      </div>
+      <div class="topbar-actions">
+       
+        <div class="user-badge" id="topbar-user"></div>
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
+        <button class="btn btn-primary btn-sm" id="btn-add-trip" onclick="showAddTrip()" style="display:none">+ Yolculuk</button>
+      </div>
+    </div>
+    <div id="app-content" class="content">
+      <div class="empty-state"><div class="empty-icon">⏳</div><p>Yükleniyor...</p></div>
+    </div>
+  </main>
+</div>
+
+
+<div class="modal-overlay" id="modal-trip" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-trip-title">Yeni Yolculuk</div>
+      <button class="modal-close" onclick="closeModal('modal-trip')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-trip-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Başlangıç Düğümü</label>
+          <select id="trip-from" class="form-input"></select>
+        </div>
+        <div class="form-group">
+          <label>Varış Düğümü</label>
+          <select id="trip-to" class="form-input"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mesafe (km)</label>
+          <input type="number" id="trip-dist" class="form-input" placeholder="4.2" step="0.1" min="0.1">
+        </div>
+        <div class="form-group">
+          <label>Yolcu Sayısı</label>
+          <input type="number" id="trip-pass" class="form-input" placeholder="3" min="1" max="8">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Yoğunluk</label>
+        <select id="trip-intensity" class="form-input">
+          <option value="high">🟠 Yüksek</option>
+          <option value="med" selected>🔵 Orta</option>
+          <option value="low">⚫ Düşük</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-full" id="submit-trip-btn" onclick="submitTrip()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="modal-confirm" style="display:none">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <div class="modal-title">⚠️ Silmeyi Onayla</div>
+      <button class="modal-close" onclick="closeModal('modal-confirm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);margin-bottom:18px">Bu işlem <strong>geri alınamaz</strong>. Yolculuk SQLite veritabanından silinecektir.</p>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost btn-full" onclick="closeModal('modal-confirm')">İptal</button>
+        <button class="btn btn-danger btn-full" id="confirm-delete-btn">🗑 Sil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
