@@ -1,0 +1,80 @@
+{% extends "layouts/base.html" %}
+{% block title %}Yolculuk Ara{% endblock %}
+{% block content %}
+<div style="padding-top:84px;min-height:100vh;background:var(--bg-secondary)">
+  <div class="container" style="padding-top:2rem">
+    <div class="page-header">
+      <div><h1>🔍 Yolculuk Ara</h1><p>Uygun yolculukları bul ve rezervasyon yap</p></div>
+    </div>
+    <div class="search-box" style="margin-bottom:2rem">
+      <form action="{{ url_for('public.search') }}" method="get">
+        <div class="search-row">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Nereden</label>
+            <input class="form-control" name="departure" value="{{ departure }}" placeholder="Kalkış...">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Nereye</label>
+            <input class="form-control" name="destination" value="{{ destination }}" placeholder="Varış...">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Tarih</label>
+            <input class="form-control" type="date" name="date" value="{{ date }}">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Kişi Sayısı</label>
+            <input class="form-control" type="number" name="seats" value="{{ seats }}" min="1" max="8">
+          </div>
+          <button type="submit" class="btn btn-primary" style="height:44px;margin-top:1.5rem">Ara</button>
+        </div>
+      </form>
+    </div>
+
+    {% if trips %}
+    <p class="text-secondary mb-2">{{ trips|length }} yolculuk bulundu</p>
+    <div class="trips-grid">
+      {% for trip in trips %}
+      <div class="trip-card">
+        <div class="trip-route">
+          <span>{{ trip.departure }}</span>
+          <span class="trip-arrow">→</span>
+          <span>{{ trip.destination }}</span>
+        </div>
+        <div class="trip-meta">
+          <span>📅 {{ trip.date }}</span>
+          <span>⏰ {{ trip.time }}</span>
+          <span>💺 {{ trip.available_seats }} boş koltuk</span>
+          <span>👤 {{ trip.driver_name }}</span>
+        </div>
+        {% if trip.description %}
+          <p style="color:var(--text-muted);font-size:0.82rem;margin-top:0.5rem">{{ trip.description }}</p>
+        {% endif %}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem">
+          <div class="trip-price">{{ trip.price }}₺</div>
+          <div style="display:flex;gap:0.5rem">
+            {% if session.get('user_id') %}
+              <form method="post" action="{{ url_for('passenger.toggle_favorite', trip_id=trip.id) }}">
+                <button class="btn btn-outline btn-sm">♡</button>
+              </form>
+              <form method="post" action="{{ url_for('passenger.book', trip_id=trip.id) }}">
+                <button class="btn btn-primary btn-sm">Rezerve Et</button>
+              </form>
+            {% else %}
+              <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">Giriş Yaparak Rezerve Et</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:4rem 2rem;color:var(--text-muted)">
+      <div style="font-size:4rem;margin-bottom:1rem">🔍</div>
+      <h3>Yolculuk bulunamadı</h3>
+      <p style="margin-top:0.5rem">Farklı bir arama dene veya tarih değiştir</p>
+      <a href="{{ url_for('public.index') }}" class="btn btn-outline" style="margin-top:1.5rem">Ana Sayfaya Dön</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

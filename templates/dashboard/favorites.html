@@ -1,0 +1,31 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% block title %}Favorilerim - YolPayı{% endblock %}
+{% block page_title %}Favorilerim{% endblock %}
+{% block content %}
+<div class="dash-card">
+    <div class="card-header"><h3>❤️ Favori Seferler</h3></div>
+    {% if favorites %}
+    <div class="trips-grid">
+        {% for t in favorites %}
+        <div class="trip-card">
+            <div class="trip-header">
+                <div class="trip-driver"><div class="driver-avatar">{{ t.driver_name[0] }}</div><span>{{ t.driver_name }}</span></div>
+                <div class="trip-price">₺{{ t.price }}</div>
+            </div>
+            <div class="trip-route">
+                <div class="route-point"><span class="point-dot dot-green"></span><span>{{ t.departure }}</span></div>
+                <div class="route-line"></div>
+                <div class="route-point"><span class="point-dot dot-red"></span><span>{{ t.destination }}</span></div>
+            </div>
+            <div class="trip-meta"><span>📅 {{ t.date }}</span><span>🕐 {{ t.time }}</span><span>💺 {{ t.available_seats }}</span></div>
+            <form action="{{ url_for('dashboard.reserve_trip', tid=t.id) }}" method="POST">
+                <button class="btn btn-primary btn-sm w-full">Rezerve Et</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="empty-icon">❤️</div><h3>Favori sefer yok</h3><a href="{{ url_for('public.search') }}" class="btn btn-primary">Sefer Ara</a></div>
+    {% endif %}
+</div>
+{% endblock %}

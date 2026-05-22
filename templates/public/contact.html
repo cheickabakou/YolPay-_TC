@@ -1,0 +1,32 @@
+{% extends "layouts/base.html" %}
+{% block title %}İletişim{% endblock %}
+{% block content %}
+<div style="padding-top:84px">
+  <section class="section">
+    <div class="section-header"><h2>İletişim</h2><p>Sorularınız için bize ulaşın</p></div>
+    <div class="grid-2" style="max-width:800px;margin:0 auto">
+      <div>
+        <div class="card mb-2"><div class="card-body">
+          <h3 style="color:var(--accent);margin-bottom:1rem">📍 Adres</h3>
+          <p style="color:var(--text-secondary)">Gümüşhane Üniversitesi Teknokent<br>Gümüşhane, Türkiye</p>
+        </div></div>
+        <div class="card mb-2"><div class="card-body">
+          <h3 style="color:var(--accent);margin-bottom:1rem">📧 E-posta</h3>
+          <p style="color:var(--text-secondary)">info@yolpayi.com</p>
+        </div></div>
+        <div class="card"><div class="card-body">
+          <h3 style="color:var(--accent);margin-bottom:1rem">📱 Telefon</h3>
+          <p style="color:var(--text-secondary)">+90 456 000 00 00</p>
+        </div></div>
+      </div>
+      <div class="card"><div class="card-body">
+        <h3 style="margin-bottom:1.5rem">Mesaj Gönder</h3>
+        <div class="form-group"><label class="form-label">Ad Soyad</label><input class="form-control" placeholder="Adınız"></div>
+        <div class="form-group"><label class="form-label">E-posta</label><input class="form-control" type="email" placeholder="email@example.com"></div>
+        <div class="form-group"><label class="form-label">Mesaj</label><textarea class="form-control" rows="4" placeholder="Mesajınız..."></textarea></div>
+        <button class="btn btn-primary w-full">Gönder</button>
+      </div></div>
+    </div>
+  </section>
+</div>
+{% endblock %}

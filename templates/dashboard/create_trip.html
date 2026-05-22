@@ -1,0 +1,88 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Yolculuk Ekle{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>➕ Yeni Yolculuk</h1><p>Yolculuk detaylarını girin</p></div>
+  <a href="{{ url_for('driver.dashboard') }}" class="btn btn-outline">← Geri</a>
+</div>
+<div class="grid-2" style="gap:2rem">
+  <div class="card">
+    <div class="card-header"><h3>Yolculuk Bilgileri</h3></div>
+    <div class="card-body">
+      <form method="post" id="tripForm">
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Kalkış Noktası *</label>
+            <input class="form-control" name="departure" id="departure" required placeholder="Örn: Gümüşhane">
+            <input type="hidden" name="dep_lat" id="dep_lat">
+            <input type="hidden" name="dep_lng" id="dep_lng">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Varış Noktası *</label>
+            <input class="form-control" name="destination" id="destination" required placeholder="Örn: Trabzon">
+            <input type="hidden" name="dest_lat" id="dest_lat">
+            <input type="hidden" name="dest_lng" id="dest_lng">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Tarih *</label>
+            <input class="form-control" type="date" name="date" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Saat *</label>
+            <input class="form-control" type="time" name="time" required>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Fiyat (₺) *</label>
+            <input class="form-control" type="number" name="price" step="0.5" min="0" required placeholder="50">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Boş Koltuk *</label>
+            <input class="form-control" type="number" name="available_seats" min="1" max="8" value="3" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Açıklama</label>
+          <textarea class="form-control" name="description" rows="3" placeholder="Yolculuk hakkında bilgi..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-full">Yolculuk Oluştur</button>
+      </form>
+    </div>
+  </div>
+  <div>
+    <div class="card">
+      <div class="card-header"><h3>🗺️ Haritada İşaretle</h3></div>
+      <div class="card-body" style="padding:0.5rem">
+        <div id="createMap" style="height:400px;border-radius:10px"></div>
+        <p style="font-size:0.78rem;color:var(--text-muted);padding:0.5rem 0.5rem 0">Haritaya tıklayarak kalkış/varış noktalarını işaretleyin</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const m = initMap('createMap');
+  let depMarker = null, destMarker = null, clickCount = 0;
+  m.on('click', e => {
+    clickCount++;
+    if (clickCount % 2 === 1) {
+      if (depMarker) m.removeLayer(depMarker);
+      depMarker = L.marker(e.latlng).addTo(m).bindPopup('Kalkış').openPopup();
+      document.getElementById('dep_lat').value = e.latlng.lat;
+      document.getElementById('dep_lng').value = e.latlng.lng;
+    } else {
+      if (destMarker) m.removeLayer(destMarker);
+      destMarker = L.marker(e.latlng).addTo(m).bindPopup('Varış').openPopup();
+      document.getElementById('dest_lat').value = e.latlng.lat;
+      document.getElementById('dest_lng').value = e.latlng.lng;
+      if (depMarker && destMarker) {
+        L.polyline([depMarker.getLatLng(), destMarker.getLatLng()], {color:'#6c63ff',dashArray:'6,8'}).addTo(m);
+      }
+    }
+  });
+</script>
+{% endblock %}

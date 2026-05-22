@@ -1,0 +1,136 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Kent Analizi{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>🏙️ Kent Analizi Paneli</h1><p>Mobilite verilerini analiz edin</p></div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card accent">
+    <div class="stat-value">{{ stats.users }}</div>
+    <div class="stat-label">Aktif Kullanıcı</div>
+    <div class="stat-icon">👥</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-value">{{ stats.trips }}</div>
+    <div class="stat-label">Aktif Yolculuk</div>
+    <div class="stat-icon">🚗</div>
+  </div>
+  <div class="stat-card orange">
+    <div class="stat-value">{{ stats.reservations }}</div>
+    <div class="stat-label">Rezervasyon</div>
+    <div class="stat-icon">🎫</div>
+  </div>
+  <div class="stat-card red">
+    <div class="stat-value">{{ stats.co2_saved }}kg</div>
+    <div class="stat-label">🌱 CO₂ Tasarrufu</div>
+    <div class="stat-icon">🌍</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Network Map -->
+  <div class="card">
+    <div class="card-header">
+      <h3>🔗 Şehirler Arası Ağ (Dijkstra)</h3>
+      <span class="badge badge-accent">NetworkX</span>
+    </div>
+    <div class="card-body" style="padding:0.5rem">
+      <div id="urbanMap" style="height:350px;border-radius:10px"></div>
+    </div>
+  </div>
+
+  <!-- Top Routes Chart -->
+  <div class="card">
+    <div class="card-header"><h3>📊 Popüler Güzergahlar</h3></div>
+    <div class="card-body">
+      {% for route in top_routes %}
+      <div style="margin-bottom:1.2rem">
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.4rem">
+          <span>{{ route.departure }} → {{ route.destination }}</span>
+          <span class="text-accent">{{ route.count }}</span>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:4px;height:8px">
+          <div style="background:linear-gradient(90deg,var(--accent),var(--accent2));height:100%;border-radius:4px;
+            {% set max_count = (top_routes|map(attribute='count')|list|max) if top_routes else 1 %}width:{{ [(route.count / max_count * 100)|int, 100]|min }}%;transition:width 1s ease"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Network Data Table -->
+{% if network.nodes %}
+<div class="card" style="margin-top:1.5rem">
+  <div class="card-header"><h3>🌐 Şehir Ağı Düğümleri</h3></div>
+  <div class="card-body">
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+      {% for node in network.nodes %}
+      <span class="badge badge-accent" style="padding:0.4rem 0.8rem;font-size:0.82rem">📍 {{ node.label }}</span>
+      {% endfor %}
+    </div>
+    <div class="divider"></div>
+    <h4 style="margin-bottom:1rem;font-size:0.9rem">Bağlantılar (Kenarlar)</h4>
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+      {% for edge in network.edges %}
+      <div style="background:var(--bg-secondary);border:1px solid var(--border);padding:0.3rem 0.8rem;border-radius:6px;font-size:0.8rem;color:var(--text-secondary)">
+        {{ edge.from }} → {{ edge.to }} <span style="color:var(--accent2)">{{ edge.weight }}₺</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Ecological Impact -->
+<div class="card" style="margin-top:1.5rem">
+  <div class="card-header"><h3>🌿 Ekolojik Etki Analizi</h3></div>
+  <div class="card-body">
+    <div class="grid-3">
+      <div style="text-align:center;padding:1.5rem;background:rgba(46,213,115,0.05);border-radius:var(--radius);border:1px solid rgba(46,213,115,0.2)">
+        <div style="font-size:2.5rem;font-weight:700;color:var(--success)">{{ stats.co2_saved }}kg</div>
+        <div style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem">Toplam CO₂ Tasarrufu</div>
+      </div>
+      <div style="text-align:center;padding:1.5rem;background:rgba(108,99,255,0.05);border-radius:var(--radius);border:1px solid rgba(108,99,255,0.2)">
+        <div style="font-size:2.5rem;font-weight:700;color:var(--accent)">{{ stats.reservations }}</div>
+        <div style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem">Paylaşılan Yolculuk</div>
+      </div>
+      <div style="text-align:center;padding:1.5rem;background:rgba(0,212,170,0.05);border-radius:var(--radius);border:1px solid rgba(0,212,170,0.2)">
+        <div style="font-size:2.5rem;font-weight:700;color:var(--accent2)">{{ (stats.reservations * 2.3 / 1000)|round(2) }}t</div>
+        <div style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem">Ton CO₂ Eşdeğeri</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const trips = [];
+  const network = {{ network|tojson }};
+  const m = initMap('urbanMap');
+  // Draw network on map
+  if (network.edges) {
+    const cityCoords = {
+      'Gümüşhane': [40.4597, 39.4826], 'Trabzon': [41.0015, 39.7178],
+      'Erzurum': [39.9055, 41.2658], 'Ankara': [39.9334, 32.8597],
+      'Samsun': [41.2867, 36.3300], 'Rize': [41.0201, 40.5234],
+      'İstanbul': [41.0082, 28.9784], 'Artvin': [41.1828, 41.8183]
+    };
+    network.edges.forEach(edge => {
+      const from = cityCoords[edge.from];
+      const to = cityCoords[edge.to];
+      if (from && to) {
+        L.polyline([from, to], {color:'#6c63ff', weight:2, opacity:0.7, dashArray:'5,8'}).addTo(m);
+      }
+    });
+    network.nodes.forEach(node => {
+      const coords = cityCoords[node.label];
+      if (coords) {
+        L.circleMarker(coords, {radius:6, color:'#00d4aa', fillColor:'#00d4aa', fillOpacity:0.8})
+          .bindPopup(`<strong>${node.label}</strong>`).addTo(m);
+      }
+    });
+  }
+</script>
+{% endblock %}

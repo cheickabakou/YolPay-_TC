@@ -1,0 +1,28 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Yolculuk Düzenle{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>✏️ Yolculuk Düzenle</h1></div>
+  <a href="{{ url_for('driver.dashboard') }}" class="btn btn-outline">← Geri</a>
+</div>
+<div class="card" style="max-width:600px">
+  <div class="card-body">
+    <form method="post">
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Kalkış</label><input class="form-control" name="departure" value="{{ trip.departure }}" required></div>
+        <div class="form-group"><label class="form-label">Varış</label><input class="form-control" name="destination" value="{{ trip.destination }}" required></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Tarih</label><input class="form-control" type="date" name="date" value="{{ trip.date }}" required></div>
+        <div class="form-group"><label class="form-label">Saat</label><input class="form-control" type="time" name="time" value="{{ trip.time }}" required></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Fiyat (₺)</label><input class="form-control" type="number" name="price" value="{{ trip.price }}" required></div>
+        <div class="form-group"><label class="form-label">Boş Koltuk</label><input class="form-control" type="number" name="available_seats" value="{{ trip.available_seats }}" required></div>
+      </div>
+      <div class="form-group"><label class="form-label">Açıklama</label><textarea class="form-control" name="description" rows="3">{{ trip.description or '' }}</textarea></div>
+      <button type="submit" class="btn btn-primary w-full">Güncelle</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

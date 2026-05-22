@@ -1,0 +1,63 @@
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <a href="{{ url_for('public.index') }}" class="nav-logo">
+            <span class="logo-icon">🚗</span>
+            <span class="logo-text">Yol<span class="logo-accent">Payı</span></span>
+        </a>
+
+        <div class="nav-links">
+            <a href="{{ url_for('public.index') }}" class="nav-link">Ana Sayfa</a>
+            <a href="{{ url_for('public.search') }}" class="nav-link">Sefer Ara</a>
+            <a href="{{ url_for('public.map_view') }}" class="nav-link">Harita</a>
+            <a href="{{ url_for('public.about') }}" class="nav-link">Hakkında</a>
+        </div>
+
+        <div class="nav-actions">
+            {% if current_user.is_authenticated %}
+                <div class="user-menu">
+                    <button class="user-btn" onclick="toggleUserMenu()">
+                        <div class="user-avatar">{{ current_user.name[0].upper() }}</div>
+                        <span>{{ current_user.name }}</span>
+                        <span class="role-badge role-{{ current_user.role }}">{{ current_user.role }}</span>
+                        <span class="chevron">▾</span>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="{{ url_for('dashboard.index') }}"><span>📊</span> Dashboard</a>
+                        {% if current_user.role in ['driver', 'admin'] %}
+                        <a href="{{ url_for('dashboard.create_trip') }}"><span>➕</span> Sefer Oluştur</a>
+                        {% endif %}
+                        <a href="{{ url_for('dashboard.my_reservations') }}"><span>🎫</span> Rezervasyonlarım</a>
+                        <a href="{{ url_for('dashboard.favorites') }}"><span>❤️</span> Favorilerim</a>
+                        {% if current_user.role in ['admin', 'urban_manager'] %}
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('admin.index') }}"><span>⚙️</span> Yönetim Paneli</a>
+                        {% endif %}
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('auth.logout') }}" class="logout-link"><span>🚪</span> Çıkış</a>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-ghost">Giriş Yap</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Kayıt Ol</a>
+            {% endif %}
+        </div>
+
+        <button class="hamburger" onclick="toggleMobileMenu()" id="hamburger">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="{{ url_for('public.index') }}">Ana Sayfa</a>
+        <a href="{{ url_for('public.search') }}">Sefer Ara</a>
+        <a href="{{ url_for('public.map_view') }}">Harita</a>
+        <a href="{{ url_for('public.about') }}">Hakkında</a>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+        <a href="{{ url_for('auth.logout') }}">Çıkış</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}">Giriş Yap</a>
+        <a href="{{ url_for('auth.register') }}">Kayıt Ol</a>
+        {% endif %}
+    </div>
+</nav>

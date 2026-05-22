@@ -1,0 +1,213 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Merhaba, {{ session.get('user_name','') }} 👋</h1>
+    <p>Hoş geldiniz — işte özet bilgileriniz</p>
+  </div>
+  {% if session.get('role') in ['driver','admin'] %}
+    <a href="{{ url_for('driver.create_trip') }}" class="btn btn-primary">+ Yolculuk Ekle</a>
+  {% endif %}
+</div>
+
+<!-- ===== PILOTE / ADMIN ===== -->
+{% if session.get('role') in ['driver', 'admin'] %}
+
+<div class="stats-grid">
+  <div class="stat-card green">
+    <div class="stat-value">{{ my_trips|length }}</div>
+    <div class="stat-label">Yolculuklarım</div>
+    <div class="stat-icon">🚗</div>
+  </div>
+  <div class="stat-card orange">
+    <div class="stat-value">{{ unread }}</div>
+    <div class="stat-label">Okunmamış Bildirim</div>
+    <div class="stat-icon">🔔</div>
+  </div>
+</div>
+
+<!-- Mes trajets -->
+<div class="card mb-3">
+  <div class="card-header">
+    <h3>🚗 Yolculuklarım</h3>
+    <a href="{{ url_for('driver.dashboard') }}" class="btn btn-outline btn-sm">Tümünü Gör</a>
+  </div>
+  <div class="card-body" style="padding:0">
+    {% if my_trips %}
+      {% for trip in my_trips %}
+      <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:500;font-size:0.9rem">{{ trip.departure }} → {{ trip.destination }}</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px">{{ trip.date }} · {{ trip.time }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <span class="badge badge-success">{{ trip.confirmed }} onaylı</span>
+          <a href="{{ url_for('driver.passengers', trip_id=trip.id) }}" class="btn btn-outline btn-sm">👥 Yolcular</a>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="padding:2rem;text-align:center;color:var(--text-muted)">
+        Henüz yolculuk oluşturmadınız.
+        <a href="{{ url_for('driver.create_trip') }}" class="btn btn-primary btn-sm" style="margin-left:0.5rem">Ekle</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Notifications pilote -->
+<div class="card">
+  <div class="card-header"><h3>🔔 Bildirimler <span class="badge badge-danger">{{ unread }}</span></h3></div>
+  <div class="card-body" style="padding:0">
+    {% if notifications %}
+      {% for n in notifications %}
+      <div class="notif-item {% if not n.is_read %}unread{% endif %}" data-id="{{ n.id }}">
+        <div class="notif-dot"></div>
+        <div>
+          <div class="notif-text">{{ n.message }}</div>
+          <div class="notif-time">{{ n.created_at }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="padding:2rem;text-align:center;color:var(--text-muted)">Bildirim yok</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Activity log pilote -->
+{% if activity %}
+<div class="card" style="margin-top:1.5rem">
+  <div class="card-header"><h3>📜 Son Aktiviteler</h3></div>
+  <div class="card-body" style="padding:0">
+    {% for act in activity %}
+    <div class="activity-item" style="padding:0.7rem 1.2rem">
+      <div class="activity-icon">
+        {% if 'login' in act.action %}🔐{% elif 'trip' in act.action %}🚗{% else %}⚡{% endif %}
+      </div>
+      <div>
+        <div class="activity-desc">{{ act.action }}{% if act.details %} — {{ act.details }}{% endif %}</div>
+        <div class="activity-time">{{ act.timestamp }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+
+<!-- ===== PASSAGER ===== -->
+{% elif session.get('role') == 'passenger' %}
+
+<div class="stats-grid">
+  <div class="stat-card accent">
+    <div class="stat-value">{{ reservations|length }}</div>
+    <div class="stat-label">Rezervasyonlarım</div>
+    <div class="stat-icon">🎫</div>
+  </div>
+  <div class="stat-card orange">
+    <div class="stat-value">{{ unread }}</div>
+    <div class="stat-label">Okunmamış Bildirim</div>
+    <div class="stat-icon">🔔</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Réservations récentes -->
+  <div class="card">
+    <div class="card-header">
+      <h3>🎫 Son Rezervasyonlar</h3>
+      <a href="{{ url_for('passenger.history') }}" class="btn btn-outline btn-sm">Tümü</a>
+    </div>
+    <div class="card-body" style="padding:0">
+      {% if reservations %}
+        {% for res in reservations %}
+        <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:500;font-size:0.9rem">{{ res.departure }} → {{ res.destination }}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px">{{ res.date }} · {{ res.time }} · {{ res.driver_name }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem">
+            <span class="badge badge-{% if res.status == 'confirmed' %}success{% elif res.status == 'pending' %}warning{% else %}danger{% endif %}">{{ res.status }}</span>
+            {% if res.status == 'pending' %}
+            <form method="post" action="{{ url_for('passenger.cancel', res_id=res.id) }}" style="display:inline">
+              <button class="btn btn-danger btn-sm" data-confirm="İptal etmek istediğinize emin misiniz?">İptal</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="padding:2rem;text-align:center;color:var(--text-muted)">
+          Henüz rezervasyon yok.
+          <a href="{{ url_for('public.search') }}" class="btn btn-primary btn-sm" style="margin-left:0.5rem">Yolculuk Ara</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Notifications passager -->
+  <div class="card">
+    <div class="card-header"><h3>🔔 Bildirimler <span class="badge badge-danger">{{ unread }}</span></h3></div>
+    <div class="card-body" style="padding:0">
+      {% if notifications %}
+        {% for n in notifications %}
+        <div class="notif-item {% if not n.is_read %}unread{% endif %}" data-id="{{ n.id }}">
+          <div class="notif-dot"></div>
+          <div>
+            <div class="notif-text">{{ n.message }}</div>
+            <div class="notif-time">{{ n.created_at }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="padding:2rem;text-align:center;color:var(--text-muted)">Bildirim yok</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- AI Suggestions (passager uniquement) -->
+{% if suggestions %}
+<div class="card" style="margin-top:1.5rem">
+  <div class="card-header">
+    <h3>🤖 Sizin İçin Öneriler</h3>
+    <span class="badge badge-accent">AI Destekli</span>
+  </div>
+  <div class="card-body">
+    <div class="trips-grid">
+      {% for trip in suggestions[:3] %}
+      <div class="trip-card" style="padding:1rem">
+        <div class="trip-route" style="font-size:0.9rem">
+          {{ trip.departure }} <span class="trip-arrow">→</span> {{ trip.destination }}
+        </div>
+        <div class="trip-meta">
+          <span>📅 {{ trip.date }}</span>
+          <span>💺 {{ trip.available_seats }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.8rem">
+          <span style="color:var(--accent2);font-weight:600">{{ trip.price }}₺</span>
+          <form method="post" action="{{ url_for('passenger.book', trip_id=trip.id) }}">
+            <button class="btn btn-primary btn-sm">Rezerve Et</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+<!-- ===== KENT YÖNETİCİSİ ===== -->
+{% elif session.get('role') == 'urban' %}
+<div style="text-align:center;padding:3rem">
+  <div style="font-size:3rem;margin-bottom:1rem">🏙️</div>
+  <h2>Kent Analizi Paneline Hoş Geldiniz</h2>
+  <p style="color:var(--text-secondary);margin-top:0.5rem">Mobilite verilerini görüntülemek için aşağıdaki butona tıklayın</p>
+  <a href="{{ url_for('urban.dashboard') }}" class="btn btn-primary btn-lg" style="margin-top:1.5rem">Kent Analizine Git →</a>
+</div>
+{% endif %}
+
+{% endblock %}

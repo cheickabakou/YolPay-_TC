@@ -1,0 +1,40 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Rezervasyon Geçmişi{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>📋 Rezervasyon Geçmişi</h1></div>
+</div>
+{% if reservations %}
+<div class="card">
+  <div class="table-container">
+    <table>
+      <thead><tr><th>Güzergah</th><th>Tarih</th><th>Sürücü</th><th>Fiyat</th><th>Durum</th><th>İşlem</th></tr></thead>
+      <tbody>
+        {% for res in reservations %}
+        <tr>
+          <td><strong>{{ res.departure }}</strong> → {{ res.destination }}</td>
+          <td>{{ res.date }} {{ res.time }}</td>
+          <td>{{ res.driver_name }}</td>
+          <td style="color:var(--accent2);font-weight:600">{{ res.price }}₺</td>
+          <td><span class="badge badge-{% if res.status == 'confirmed' %}success{% elif res.status == 'pending' %}warning{% else %}danger{% endif %}">{{ res.status }}</span></td>
+          <td>
+            {% if res.status == 'pending' %}
+            <form method="post" action="{{ url_for('passenger.cancel', res_id=res.id) }}">
+              <button class="btn btn-danger btn-sm" data-confirm="İptal etmek istediğinize emin misiniz?">İptal</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div style="text-align:center;padding:3rem;color:var(--text-muted)">
+  <div style="font-size:3rem">📋</div>
+  <p>Rezervasyon geçmişi yok</p>
+  <a href="{{ url_for('public.search') }}" class="btn btn-primary" style="margin-top:1rem">Yolculuk Ara</a>
+</div>
+{% endif %}
+{% endblock %}

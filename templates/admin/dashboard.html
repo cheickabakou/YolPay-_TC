@@ -1,0 +1,88 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Admin Panel{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>⚙️ Admin Paneli</h1><p>Platform yönetimi ve analitik</p></div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card accent">
+    <div class="stat-value" data-target="{{ stats.users }}">0</div>
+    <div class="stat-label">Toplam Kullanıcı</div>
+    <div class="stat-icon">👥</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-value" data-target="{{ stats.trips }}">0</div>
+    <div class="stat-label">Aktif Yolculuk</div>
+    <div class="stat-icon">🚗</div>
+  </div>
+  <div class="stat-card orange">
+    <div class="stat-value" data-target="{{ stats.reservations }}">0</div>
+    <div class="stat-label">Toplam Rezervasyon</div>
+    <div class="stat-icon">🎫</div>
+  </div>
+  <div class="stat-card red">
+    <div class="stat-value">{{ stats.co2_saved }}kg</div>
+    <div class="stat-label">CO₂ Tasarrufu</div>
+    <div class="stat-icon">🌱</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Top Routes -->
+  <div class="card">
+    <div class="card-header"><h3>🏆 Popüler Güzergahlar</h3></div>
+    <div class="card-body" style="padding:0">
+      {% for route in top_routes %}
+      <div style="padding:0.9rem 1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:0.9rem">{{ route.departure }} → {{ route.destination }}</span>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <span class="badge badge-accent">{{ route.count }} yolculuk</span>
+          <span style="color:var(--accent2);font-size:0.85rem;font-weight:600">avg {{ "%.0f"|format(route.avg_price) }}₺</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Role Distribution -->
+  <div class="card">
+    <div class="card-header"><h3>👥 Kullanıcı Rolleri</h3></div>
+    <div class="card-body">
+      {% for r in role_dist %}
+      <div style="margin-bottom:1.2rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;font-size:0.88rem">
+          <span>{{ r.role }}</span><span style="color:var(--text-muted)">{{ r.count }}</span>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:4px;height:6px;overflow:hidden">
+          <div style="background:linear-gradient(90deg,var(--accent),var(--accent2));height:100%;width:{{ [(r.count / stats.users * 100)|int, 100]|min }}%;transition:width 0.8s ease"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Activity Log -->
+<div class="card" style="margin-top:1.5rem">
+  <div class="card-header"><h3>📜 Sistem Logları</h3></div>
+  <div class="card-body" style="padding:0">
+    <div class="table-container">
+      <table>
+        <thead><tr><th>Kullanıcı</th><th>E-posta</th><th>İşlem</th><th>Detay</th><th>Zaman</th></tr></thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td>{{ log.name or 'Sistem' }}</td>
+            <td style="color:var(--text-muted);font-size:0.82rem">{{ log.email or '—' }}</td>
+            <td><span class="badge badge-info">{{ log.action }}</span></td>
+            <td style="font-size:0.82rem;color:var(--text-muted)">{{ log.details or '—' }}</td>
+            <td style="font-size:0.78rem;color:var(--text-muted)">{{ log.timestamp }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

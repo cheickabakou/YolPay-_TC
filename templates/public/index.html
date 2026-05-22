@@ -1,0 +1,173 @@
+{% extends "layouts/base.html" %}
+{% block title %}Ana Sayfa{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <h1>Birlikte Yol Al, <br><span class="highlight">Birlikte Kazan</span></h1>
+    <p class="hero-sub">YolPayı ile yolculuklarını paylaş, CO₂ emisyonunu azalt ve hem tasarruf et hem de yeni insanlarla tanış.</p>
+    <div class="hero-actions">
+      <a href="{{ url_for('public.search') }}" class="btn btn-primary btn-lg">🔍 Yolculuk Bul</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-outline btn-lg">Ücretsiz Kayıt Ol</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">{{ stats.users }}+</div>
+        <div class="hero-stat-label">Aktif Kullanıcı</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">{{ stats.trips }}+</div>
+        <div class="hero-stat-label">Aktif Yolculuk</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">{{ stats.co2_saved }}kg</div>
+        <div class="hero-stat-label">CO₂ Tasarrufu</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">%100</div>
+        <div class="hero-stat-label">Güvenli Ödeme</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEARCH -->
+<section style="background:var(--bg-secondary);padding:3rem 2rem;border-top:1px solid var(--border)">
+  <div class="container">
+    <div class="search-box">
+      <h2>🔍 Hızlı Yolculuk Ara</h2>
+      <form action="{{ url_for('public.search') }}" method="get">
+        <div class="search-row">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Nereden</label>
+            <input class="form-control" name="departure" placeholder="Kalkış noktası...">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Nereye</label>
+            <input class="form-control" name="destination" placeholder="Varış noktası...">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Tarih</label>
+            <input class="form-control" type="date" name="date">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Kişi</label>
+            <input class="form-control" type="number" name="seats" value="1" min="1" max="8">
+          </div>
+          <button type="submit" class="btn btn-primary" style="height:44px;margin-top:1.5rem">Ara →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="section-header">
+    <h2>Neden YolPayı?</h2>
+    <p>Akıllı teknoloji ile paylaşımlı ulaşımı kolaylaştırıyoruz</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🤝</div>
+      <h3>Güvenli Topluluk</h3>
+      <p>Doğrulanmış kullanıcılar ve değerlendirme sistemi ile güvenli yolculuk</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌱</div>
+      <h3>Çevre Dostu</h3>
+      <p>Her paylaşılan yolculuk ile CO₂ emisyonunu azalt, dünyaya katkı sağla</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💰</div>
+      <h3>Ekonomik</h3>
+      <p>Yakıt masraflarını paylaş, hem sürücü hem yolcu tasarruf etsin</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗺️</div>
+      <h3>Akıllı Rota</h3>
+      <p>Dijkstra algoritması ile en uygun güzergahı otomatik hesapla</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Anlık Bildirim</h3>
+      <p>Rezervasyon onayı, yolculuk değişikliği için anlık bildirimler</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Veri Analitiği</h3>
+      <p>Kent yöneticileri için trafik ve mobilite analizi raporları</p>
+    </div>
+  </div>
+</section>
+
+<!-- RECENT TRIPS -->
+{% if trips %}
+<section style="background:var(--bg-secondary);padding:5rem 2rem;border-top:1px solid var(--border)">
+  <div class="container">
+    <div class="section-header">
+      <h2>Son Eklenen Yolculuklar</h2>
+      <p>Bugün eklenen yolculuklardan seçimini yap</p>
+    </div>
+    <div class="trips-grid">
+      {% for trip in trips %}
+      <div class="trip-card">
+        <div class="trip-route">
+          <span>{{ trip.departure }}</span>
+          <span class="trip-arrow">→</span>
+          <span>{{ trip.destination }}</span>
+        </div>
+        <div class="trip-meta">
+          <span>📅 {{ trip.date }}</span>
+          <span>⏰ {{ trip.time }}</span>
+          <span>💺 {{ trip.available_seats }} koltuk</span>
+          <span>👤 {{ trip.driver_name }}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem">
+          <div class="trip-price">{{ trip.price }}₺</div>
+          {% if session.get('user_id') %}
+            <form method="post" action="{{ url_for('passenger.book', trip_id=trip.id) }}">
+              <button class="btn btn-primary btn-sm">Rezervasyon Yap</button>
+            </form>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-sm">Giriş Yap</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="text-align:center;margin-top:2rem">
+      <a href="{{ url_for('public.search') }}" class="btn btn-outline btn-lg">Tüm Yolculukları Gör →</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- HOW IT WORKS -->
+<section class="section">
+  <div class="section-header">
+    <h2>Nasıl Çalışır?</h2>
+  </div>
+  <div class="grid-3" style="max-width:900px;margin:0 auto">
+    <div style="text-align:center">
+      <div style="width:64px;height:64px;background:var(--accent-glow);border:1px solid rgba(108,99,255,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1rem">1</div>
+      <h3>Kayıt Ol</h3>
+      <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:0.5rem">Ücretsiz hesap oluştur, sürücü veya yolcu olarak kaydol</p>
+    </div>
+    <div style="text-align:center">
+      <div style="width:64px;height:64px;background:var(--accent2-glow);border:1px solid rgba(0,212,170,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1rem">2</div>
+      <h3>Yolculuk Bul / Ekle</h3>
+      <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:0.5rem">Mevcut yolculuklara katıl veya kendi yolculuğunu paylaş</p>
+    </div>
+    <div style="text-align:center">
+      <div style="width:64px;height:64px;background:rgba(46,213,115,0.1);border:1px solid rgba(46,213,115,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1rem">3</div>
+      <h3>Yola Çık!</h3>
+      <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:0.5rem">Onaylanan rezervasyonunla keyifli ve ekonomik yolculuk yap</p>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

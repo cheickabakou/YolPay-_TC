@@ -1,0 +1,37 @@
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <a href="/" class="footer-logo">🚗 Yol<span>Payı</span></a>
+            <p>Türkiye'nin akıllı araç paylaşım platformu. Birlikte yolculuk edin, birlikte tasarruf edin.</p>
+            <div class="social-links">
+                <a href="#" class="social-btn">𝕏</a>
+                <a href="#" class="social-btn">in</a>
+                <a href="#" class="social-btn">f</a>
+            </div>
+        </div>
+        <div class="footer-links">
+            <div class="footer-col">
+                <h4>Platform</h4>
+                <a href="{{ url_for('public.search') }}">Sefer Ara</a>
+                <a href="{{ url_for('public.map_view') }}">Harita</a>
+                <a href="{{ url_for('auth.register') }}">Kayıt Ol</a>
+            </div>
+            <div class="footer-col">
+                <h4>Şirket</h4>
+                <a href="{{ url_for('public.about') }}">Hakkında</a>
+                <a href="{{ url_for('public.contact') }}">İletişim</a>
+                <a href="{{ url_for('public.faq') }}">SSS</a>
+            </div>
+            <div class="footer-col">
+                <h4>Yasal</h4>
+                <a href="{{ url_for('public.terms') }}">Kullanım Şartları</a>
+                <a href="#">Gizlilik Politikası</a>
+                <a href="#">Çerez Politikası</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2024 YolPayı. Tüm hakları saklıdır.</p>
+        <p>Gümüşhane'den 🌍 tüm Türkiye'ye</p>
+    </div>
+</footer>

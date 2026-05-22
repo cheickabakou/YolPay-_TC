@@ -1,0 +1,44 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Yolcular{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>👥 Yolcular</h1>
+    <p>{{ trip.departure }} → {{ trip.destination }} · {{ trip.date }}</p>
+  </div>
+  <a href="{{ url_for('driver.dashboard') }}" class="btn btn-outline">← Geri</a>
+</div>
+{% if passengers %}
+<div class="card">
+  <div class="table-container">
+    <table>
+      <thead><tr><th>Yolcu</th><th>E-posta</th><th>Durum</th><th>Tarih</th><th>İşlem</th></tr></thead>
+      <tbody>
+        {% for p in passengers %}
+        <tr>
+          <td>{{ p.name }}</td>
+          <td style="color:var(--text-muted)">{{ p.email }}</td>
+          <td><span class="badge badge-{% if p.status == 'confirmed' %}success{% elif p.status == 'pending' %}warning{% else %}danger{% endif %}">{{ p.status }}</span></td>
+          <td style="color:var(--text-muted);font-size:0.82rem">{{ p.created_at }}</td>
+          <td>
+            {% if p.status == 'pending' %}
+            <form method="post" action="{{ url_for('driver.manage_reservation', res_id=p.id, action='confirmed') }}" style="display:inline">
+              <button class="btn btn-success btn-sm">✓ Onayla</button>
+            </form>
+            <form method="post" action="{{ url_for('driver.manage_reservation', res_id=p.id, action='rejected') }}" style="display:inline">
+              <button class="btn btn-danger btn-sm">✗ Reddet</button>
+            </form>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div style="text-align:center;padding:3rem;color:var(--text-muted)">Henüz yolcu yok</div>
+{% endif %}
+{% endblock %}

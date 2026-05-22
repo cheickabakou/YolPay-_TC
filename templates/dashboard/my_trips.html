@@ -1,0 +1,39 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% block title %}Seferlerim - YolPayı{% endblock %}
+{% block page_title %}Seferlerim{% endblock %}
+{% block content %}
+<div class="dash-card">
+    <div class="card-header">
+        <h3>🚗 Tüm Seferlerim</h3>
+        <a href="{{ url_for('dashboard.create_trip') }}" class="btn btn-primary btn-sm">➕ Yeni Sefer</a>
+    </div>
+    {% if trips %}
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Güzergah</th><th>Tarih</th><th>Saat</th><th>Fiyat</th><th>Koltuk</th><th>Rezerv.</th><th>Durum</th><th>İşlem</th></tr></thead>
+            <tbody>
+            {% for t in trips %}
+            <tr>
+                <td><strong>{{ t.departure }}</strong> → {{ t.destination }}</td>
+                <td>{{ t.date }}</td>
+                <td>{{ t.time }}</td>
+                <td>₺{{ t.price }}</td>
+                <td>{{ t.available_seats }}</td>
+                <td><span class="badge badge-active">{{ t.booking_count }}</span></td>
+                <td><span class="badge badge-{{ t.status }}">{{ t.status }}</span></td>
+                <td class="action-btns">
+                    <a href="{{ url_for('dashboard.trip_passengers', tid=t.id) }}" class="btn btn-ghost btn-xs">👥</a>
+                    <form action="{{ url_for('dashboard.delete_trip', tid=t.id) }}" method="POST" onsubmit="return confirm('Silmek istediğinizden emin misiniz?')">
+                        <button class="btn btn-danger btn-xs">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="empty-icon">🚗</div><h3>Henüz sefer oluşturmadınız</h3><a href="{{ url_for('dashboard.create_trip') }}" class="btn btn-primary">İlk Seferi Oluştur</a></div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% block title %}Kent Analizi - YolPayı{% endblock %}
+{% block page_title %}Kent & Trafik Analizi{% endblock %}
+{% block content %}
+<div class="stats-row">
+    <div class="stat-mini"><div class="stat-mini-icon">🌿</div><div class="stat-mini-info"><div class="stat-mini-num">{{ eco.co2_saved_kg }}kg</div><div class="stat-mini-label">CO₂ Tasarruf</div></div></div>
+    <div class="stat-mini"><div class="stat-mini-icon">🌳</div><div class="stat-mini-info"><div class="stat-mini-num">{{ eco.trees_equivalent }}</div><div class="stat-mini-label">Ağaç Eşdeğeri</div></div></div>
+    <div class="stat-mini"><div class="stat-mini-icon">🛣️</div><div class="stat-mini-info"><div class="stat-mini-num">{{ eco.km_shared }}</div><div class="stat-mini-label">Paylaşılan km</div></div></div>
+</div>
+
+<div class="dash-grid-2">
+    <div class="dash-card">
+        <div class="card-header"><h3>🗺️ Trafik Akış Haritası</h3></div>
+        <div id="urbanMap" style="height:350px;border-radius:12px;overflow:hidden;"></div>
+    </div>
+    <div class="dash-card">
+        <div class="card-header"><h3>📊 Güzergah Yoğunluğu</h3></div>
+        <canvas id="urbanChart" height="250"></canvas>
+    </div>
+</div>
+
+<div class="dash-card">
+    <div class="card-header"><h3>📋 Güzergah Detayları</h3></div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Kalkış</th><th>Varış</th><th>Sefer Sayısı</th><th>Toplam Koltuk</th></tr></thead>
+            <tbody>
+            {% for r in urban.routes %}
+            <tr>
+                <td>{{ r.departure }}</td>
+                <td>{{ r.destination }}</td>
+                <td><span class="badge badge-active">{{ r.trips_count }}</span></td>
+                <td>{{ r.total_seats }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Urban map
+const map = L.map('urbanMap').setView([40.4567, 39.4817], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+const cityCoords = {
+    'Gümüşhane':[40.4567,39.4817],'Trabzon':[41.0015,39.7178],'Ankara':[39.9208,32.8541],
+    'İstanbul':[41.0082,28.9784],'Erzurum':[39.9043,41.2679],'Erzincan':[39.75,39.5]
+};
+
+const routes = {{ urban.routes | tojson }};
+routes.forEach(r => {
+    const dep = cityCoords[r.departure], dest = cityCoords[r.destination];
+    if (dep && dest) {
+        const weight = Math.min(r.trips_count * 2 + 2, 10);
+        L.polyline([dep, dest], {color:'#6366f1', weight, opacity:0.7}).addTo(map);
+        L.circleMarker(dep, {radius:6+r.trips_count, fillColor:'#6366f1', color:'#fff', weight:2, fillOpacity:0.8})
+            .addTo(map).bindPopup(r.departure);
+    }
+});
+
+// Bar chart
+const labels = routes.slice(0,6).map(r => r.departure + '→' + r.destination);
+const data = routes.slice(0,6).map(r => r.trips_count);
+new Chart(document.getElementById('urbanChart'), {
+    type: 'horizontalBar',
+    data: {
+        labels,
+        datasets: [{ label: 'Sefer Sayısı', data, backgroundColor: '#6366f1', borderRadius: 4 }]
+    },
+    options: {
+        indexAxis: 'y',
+        scales: {
+            x: { ticks: { color: '#a6adc8' }, grid: { color: '#313244' } },
+            y: { ticks: { color: '#a6adc8' }, grid: { color: '#313244' } }
+        },
+        plugins: { legend: { labels: { color: '#cdd6f4' } } }
+    }
+});
+</script>
+{% endblock %}

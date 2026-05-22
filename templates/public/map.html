@@ -1,0 +1,25 @@
+{% extends "layouts/base.html" %}
+{% block title %}Canlı Harita{% endblock %}
+{% block content %}
+<div style="padding-top:64px">
+  <div id="map-full"></div>
+</div>
+<div style="position:fixed;top:80px;left:1rem;z-index:1000;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;width:260px">
+  <h3 style="font-size:0.95rem;margin-bottom:0.8rem">🗺️ Aktif Yolculuklar</h3>
+  <div id="trip-list" style="max-height:400px;overflow-y:auto">
+    {% for trip in trips %}
+    <div style="padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.82rem;color:var(--text-secondary)">
+      <strong style="color:var(--text-primary)">{{ trip.departure }} → {{ trip.destination }}</strong><br>
+      📅 {{ trip.date }} · 💰 {{ trip.price }}₺
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const trips = {{ trips|tojson }};
+  initMap('map-full');
+  addTripMarkers(trips);
+</script>
+{% endblock %}

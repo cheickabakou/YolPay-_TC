@@ -1,0 +1,79 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% block title %}Analitik - Admin{% endblock %}
+{% block page_title %}Veri Analizi{% endblock %}
+{% block content %}
+<div class="stats-row">
+    <div class="stat-mini"><div class="stat-mini-icon">👥</div><div class="stat-mini-info"><div class="stat-mini-num">{{ stats.users }}</div><div class="stat-mini-label">Kullanıcı</div></div></div>
+    <div class="stat-mini"><div class="stat-mini-icon">🚗</div><div class="stat-mini-info"><div class="stat-mini-num">{{ stats.trips }}</div><div class="stat-mini-label">Sefer</div></div></div>
+    <div class="stat-mini"><div class="stat-mini-icon">🎫</div><div class="stat-mini-info"><div class="stat-mini-num">{{ stats.reservations }}</div><div class="stat-mini-label">Rezervasyon</div></div></div>
+    <div class="stat-mini"><div class="stat-mini-icon">🌿</div><div class="stat-mini-info"><div class="stat-mini-num">{{ stats.co2_saved }}kg</div><div class="stat-mini-label">CO₂ Tasarruf</div></div></div>
+</div>
+
+<div class="dash-grid-2">
+    <div class="dash-card">
+        <div class="card-header"><h3>👥 Kullanıcı Rol Dağılımı</h3></div>
+        <canvas id="roleChart" height="200"></canvas>
+    </div>
+    <div class="dash-card">
+        <div class="card-header"><h3>🏆 En Popüler Güzergahlar</h3></div>
+        <div class="routes-list">
+            {% for r in urban.routes[:5] %}
+            <div class="route-bar-item">
+                <span class="route-bar-label">{{ r.departure }} → {{ r.destination }}</span>
+                <div class="route-bar-wrap">
+                    <div class="route-bar-fill" style="width:{{ [r.trips_count * 20, 100]|min }}%"></div>
+                </div>
+                <span class="route-bar-count">{{ r.trips_count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="dash-card">
+    <div class="card-header"><h3>📅 Aylık Sefer Trendi</h3></div>
+    <canvas id="monthChart" height="100"></canvas>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const roleData = {{ role_dist | tojson }};
+const monthData = {{ urban.monthly | tojson }};
+
+// Role chart
+new Chart(document.getElementById('roleChart'), {
+    type: 'doughnut',
+    data: {
+        labels: roleData.map(r => r.role),
+        datasets: [{
+            data: roleData.map(r => r.cnt),
+            backgroundColor: ['#6366f1','#22c55e','#f59e0b','#ef4444'],
+            borderColor: '#1e1e2e', borderWidth: 2
+        }]
+    },
+    options: { plugins: { legend: { labels: { color: '#cdd6f4' } } } }
+});
+
+// Monthly chart
+new Chart(document.getElementById('monthChart'), {
+    type: 'bar',
+    data: {
+        labels: monthData.map(m => m.month),
+        datasets: [{
+            label: 'Sefer Sayısı',
+            data: monthData.map(m => m.count),
+            backgroundColor: '#6366f1', borderRadius: 6
+        }]
+    },
+    options: {
+        scales: {
+            x: { ticks: { color: '#a6adc8' }, grid: { color: '#313244' } },
+            y: { ticks: { color: '#a6adc8' }, grid: { color: '#313244' } }
+        },
+        plugins: { legend: { labels: { color: '#cdd6f4' } } }
+    }
+});
+</script>
+{% endblock %}

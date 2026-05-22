@@ -1,0 +1,63 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% block title %}Admin Panel - YolPayı{% endblock %}
+{% block page_title %}Admin Paneli{% endblock %}
+{% block content %}
+<div class="stats-row">
+    <div class="stat-mini"><div class="stat-mini-icon">👥</div><div class="stat-mini-info"><div class="stat-mini-num">{{ stats.users }}</div><div class="stat-mini-label">Kullanıcı</div></div></div>
+    <div class="stat-mini"><div class="stat-mini-icon">🚗</div><div class="stat-mini-info"><div class="stat-mini-num">{{ stats.trips }}</div><div class="stat-mini-label">Sefer</div></div></div>
+    <div class="stat-mini"><div class="stat-mini-icon">🎫</div><div class="stat-mini-info"><div class="stat-mini-num">{{ stats.reservations }}</div><div class="stat-mini-label">Rezervasyon</div></div></div>
+    <div class="stat-mini"><div class="stat-mini-icon">🌿</div><div class="stat-mini-info"><div class="stat-mini-num">{{ stats.co2_saved }}kg</div><div class="stat-mini-label">CO₂ Tasarruf</div></div></div>
+</div>
+
+<div class="dash-grid-2">
+    <div class="dash-card">
+        <div class="card-header"><h3>Son Kullanıcılar</h3><a href="{{ url_for('admin.users') }}" class="card-link">Tümü →</a></div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Ad</th><th>E-posta</th><th>Rol</th></tr></thead>
+                <tbody>
+                {% for u in recent_users %}
+                <tr>
+                    <td>{{ u.name }}</td>
+                    <td>{{ u.email }}</td>
+                    <td><span class="badge role-badge-sm role-{{ u.role }}">{{ u.role }}</span></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="dash-card">
+        <div class="card-header"><h3>Son Seferler</h3><a href="{{ url_for('admin.trips') }}" class="card-link">Tümü →</a></div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Güzergah</th><th>Sürücü</th><th>Tarih</th></tr></thead>
+                <tbody>
+                {% for t in recent_trips %}
+                <tr>
+                    <td>{{ t.departure }} → {{ t.destination }}</td>
+                    <td>{{ t.driver_name }}</td>
+                    <td>{{ t.date }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="dash-card">
+    <div class="card-header"><h3>📋 Son Aktiviteler</h3><a href="{{ url_for('admin.logs') }}" class="card-link">Tümü →</a></div>
+    <div class="activity-list">
+        {% for log in recent_logs %}
+        <div class="activity-item">
+            <span class="activity-dot"></span>
+            <div class="activity-content">
+                <div class="activity-action"><strong>{{ log.user_name or 'Sistem' }}</strong> — {{ log.action }}</div>
+                <div class="activity-time">{{ log.timestamp }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

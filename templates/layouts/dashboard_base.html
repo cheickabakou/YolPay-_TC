@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard{% endblock %} — YolPayı</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav class="navbar">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button class="btn btn-icon sidebar-toggle" style="display:none" id="sidebarToggle">☰</button>
+      <a class="navbar-brand" href="{{ url_for('public.index') }}">
+        YolPayı
+      </a>
+    </div>
+    <div class="navbar-nav" id="mainNav">
+      <a href="{{ url_for('public.index') }}">← Ana Sayfa</a>
+      <span style="color:var(--text-muted);padding:0 0.5rem">|</span>
+      <span style="color:var(--text-secondary);font-size:0.85rem">
+        👤 {{ session.get('user_name','Kullanıcı') }}
+        <span class="badge badge-accent">{{ session.get('role','') }}</span>
+      </span>
+      {% if unread is defined and unread > 0 %}
+        <span class="badge badge-danger">{{ unread }} bildirim</span>
+      {% endif %}
+      <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm">Çıkış</a>
+    </div>
+    <button class="navbar-toggler" onclick="document.getElementById('mainNav').classList.toggle('open')">☰</button>
+  </nav>
+
+  <div class="flash-container" style="position:fixed;top:74px;right:1rem;z-index:9999;width:320px">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }}" style="margin-bottom:0.5rem">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+  </div>
+
+  <div class="layout-with-sidebar">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Genel</div>
+        <a href="{{ url_for('dashboard.index') }}" class="sidebar-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+          <span class="icon">📊</span> Dashboard
+        </a>
+        {% if session.get('role') == 'passenger' %}
+        <a href="{{ url_for('public.search') }}" class="sidebar-item">
+          <span class="icon">🔍</span> Yolculuk Ara
+        </a>
+        <a href="{{ url_for('public.map_view') }}" class="sidebar-item">
+          <span class="icon">🗺️</span> Harita
+        </a>
+        {% endif %}
+      </div>
+
+      {% if session.get('role') == 'driver' %}
+      <div class="sidebar-section">
+        <div class="sidebar-label">Sürücü</div>
+        <a href="{{ url_for('driver.dashboard') }}" class="sidebar-item {% if request.blueprint == 'driver' %}active{% endif %}">
+          <span class="icon">🚗</span> Yolculuklarım
+        </a>
+        <a href="{{ url_for('driver.create_trip') }}" class="sidebar-item">
+          <span class="icon">➕</span> Yolculuk Ekle
+        </a>
+      </div>
+      {% endif %}
+
+      {% if session.get('role') == 'passenger' %}
+      <div class="sidebar-section">
+        <div class="sidebar-label">Yolcu</div>
+        <a href="{{ url_for('passenger.history') }}" class="sidebar-item {% if request.endpoint == 'passenger.history' %}active{% endif %}">
+          <span class="icon">📋</span> Rezervasyonlarım
+        </a>
+      </div>
+      {% endif %}
+
+      {% if session.get('role') == 'urban' %}
+      <div class="sidebar-section">
+        <div class="sidebar-label">Kent Analizi</div>
+        <a href="{{ url_for('urban.dashboard') }}" class="sidebar-item {% if request.blueprint == 'urban' %}active{% endif %}">
+          <span class="icon">🏙️</span> Kent Dashboard
+        </a>
+      </div>
+      {% endif %}
+
+      {% if session.get('role') == 'admin' %}
+      <div class="sidebar-section">
+        <div class="sidebar-label">Yönetim</div>
+        <a href="{{ url_for('admin.dashboard') }}" class="sidebar-item {% if request.blueprint == 'admin' %}active{% endif %}">
+          <span class="icon">⚙️</span> Admin Panel
+        </a>
+        <a href="{{ url_for('admin.users') }}" class="sidebar-item">
+          <span class="icon">👥</span> Kullanıcılar
+        </a>
+        <a href="{{ url_for('admin.trips') }}" class="sidebar-item">
+          <span class="icon">🗺️</span> Tüm Yolculuklar
+        </a>
+        <a href="{{ url_for('admin.reservations') }}" class="sidebar-item">
+          <span class="icon">📋</span> Rezervasyonlar
+        </a>
+      </div>
+      {% endif %}
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Hesap</div>
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-item">
+          <span class="icon">🚪</span> Çıkış Yap
+        </a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+  <script>
+    document.getElementById('sidebarToggle').style.display = 'block';
+    document.getElementById('sidebarToggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+
+<!-- ===== AI ASSISTANT WIDGET ===== -->
+<div id="ai-chat-btn" onclick="toggleChat()" style="
+  position:fixed; bottom:2rem; right:2rem; z-index:9999;
+  width:56px; height:56px; border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; box-shadow:0 4px 20px rgba(108,99,255,0.4);
+  transition:all 0.3s ease; font-size:1.5rem;
+" title="YolPayı Asistan">
+  🤖
+</div>
+
+<div id="ai-chat-window" style="
+  position:fixed; bottom:5.5rem; right:2rem; z-index:9998;
+  width:360px; max-height:520px;
+  background:var(--bg-card); border:1px solid var(--border-light);
+  border-radius:var(--radius-lg); box-shadow:var(--shadow-lg);
+  display:none; flex-direction:column; overflow:hidden;
+  font-family:'DM Sans',sans-serif;
+">
+  <!-- Header -->
+  <div style="
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    padding:1rem 1.2rem; display:flex; align-items:center;
+    justify-content:space-between;
+  ">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="font-size:1.4rem">🤖</div>
+      <div>
+        <div style="font-weight:600;color:#fff;font-size:0.95rem">YolPayı Asistan</div>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.7)">● Çevrimiçi — Sormaktan çekinme!</div>
+      </div>
+    </div>
+    <button onclick="toggleChat()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1.2rem;padding:0.2rem">✕</button>
+  </div>
+
+  <!-- Messages -->
+  <div id="ai-messages" style="
+    flex:1; overflow-y:auto; padding:1rem;
+    display:flex; flex-direction:column; gap:0.8rem;
+    max-height:340px; min-height:200px;
+  ">
+    <div class="ai-msg ai-msg-bot">
+      👋 Merhaba! Ben YolPayı'nın AI asistanıyım. Yolculuk bulmak, rezervasyon yapmak veya platform hakkında sorularınız için buradayım!
+    </div>
+  </div>
+
+  <!-- Quick suggestions -->
+  <div id="ai-suggestions" style="padding:0.5rem 1rem;display:flex;flex-wrap:wrap;gap:0.4rem;border-top:1px solid var(--border)">
+    <button class="ai-suggestion" onclick="sendSuggestion(this)">🚗 Yolculuk nasıl bulurum?</button>
+    <button class="ai-suggestion" onclick="sendSuggestion(this)">📋 Rezervasyon iptal?</button>
+    <button class="ai-suggestion" onclick="sendSuggestion(this)">💰 Fiyatlar nasıl belirlenir?</button>
+    <button class="ai-suggestion" onclick="sendSuggestion(this)">🌱 CO₂ tasarrufu nedir?</button>
+  </div>
+
+  <!-- Input -->
+  <div style="padding:0.8rem;border-top:1px solid var(--border);display:flex;gap:0.5rem">
+    <input id="ai-input" type="text" placeholder="Sorunuzu yazın..."
+      style="flex:1;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;
+      padding:0.6rem 0.9rem;color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none"
+      onkeydown="if(event.key==='Enter')sendMessage()"
+    >
+    <button onclick="sendMessage()" id="ai-send-btn" style="
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      border:none;border-radius:8px;padding:0.6rem 1rem;
+      color:#fff;cursor:pointer;font-size:1rem;transition:opacity 0.2s
+    ">➤</button>
+  </div>
+</div>
+
+<style>
+.ai-msg {
+  max-width:85%; padding:0.7rem 0.9rem;
+  border-radius:12px; font-size:0.85rem; line-height:1.5;
+  animation:fadeInUp 0.3s ease;
+}
+.ai-msg-bot {
+  background:var(--bg-secondary); color:var(--text-primary);
+  border:1px solid var(--border); border-bottom-left-radius:4px;
+  align-self:flex-start;
+}
+.ai-msg-user {
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff; border-bottom-right-radius:4px;
+  align-self:flex-end;
+}
+.ai-msg-typing {
+  background:var(--bg-secondary); color:var(--text-muted);
+  border:1px solid var(--border); border-bottom-left-radius:4px;
+  align-self:flex-start; font-style:italic;
+}
+.ai-suggestion {
+  background:var(--bg-secondary); border:1px solid var(--border);
+  border-radius:20px; padding:0.3rem 0.7rem;
+  font-size:0.75rem; color:var(--text-secondary);
+  cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif;
+}
+.ai-suggestion:hover { border-color:var(--accent); color:var(--accent); }
+#ai-chat-btn:hover { transform:scale(1.1); box-shadow:0 6px 24px rgba(108,99,255,0.6); }
+</style>
+
+<script>
+let chatOpen = false;
+let chatHistory = [];
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  const win = document.getElementById('ai-chat-window');
+  const btn = document.getElementById('ai-chat-btn');
+  win.style.display = chatOpen ? 'flex' : 'none';
+  btn.textContent = chatOpen ? '✕' : '🤖';
+  if (chatOpen) document.getElementById('ai-input').focus();
+}
+
+function sendSuggestion(btn) {
+  document.getElementById('ai-input').value = btn.textContent;
+  document.getElementById('ai-suggestions').style.display = 'none';
+  sendMessage();
+}
+
+function addMessage(text, type) {
+  const msgs = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = `ai-msg ai-msg-${type}`;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('ai-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = '';
+  document.getElementById('ai-send-btn').disabled = true;
+  document.getElementById('ai-suggestions').style.display = 'none';
+
+  addMessage(msg, 'user');
+  chatHistory.push({ role: 'user', content: msg });
+
+  const typing = addMessage('✦ Yanıt hazırlanıyor...', 'typing');
+
+  try {
+    const res = await fetch('/api/ai-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, history: chatHistory.slice(-6) })
+    });
+    const data = await res.json();
+    typing.remove();
+    const botMsg = data.reply || 'Üzgünüm, şu an yanıt veremiyorum.';
+    addMessage(botMsg, 'bot');
+    chatHistory.push({ role: 'assistant', content: botMsg });
+  } catch(e) {
+    typing.remove();
+    addMessage('Bağlantı hatası. Lütfen tekrar deneyin.', 'bot');
+  }
+
+  document.getElementById('ai-send-btn').disabled = false;
+  document.getElementById('ai-input').focus();
+}
+</script>
+
+</body>
+</html>

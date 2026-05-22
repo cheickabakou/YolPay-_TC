@@ -1,0 +1,44 @@
+{% extends "layouts/base.html" %}
+{% block title %}Hakkımızda{% endblock %}
+{% block content %}
+<div style="padding-top:84px">
+  <section class="section">
+    <div class="section-header">
+      <h2>YolPayı Hakkında</h2>
+      <p>Gümüşhane'den dünyaya uzanan akıllı ulaşım vizyonu</p>
+    </div>
+    <div class="grid-2" style="max-width:900px;margin:0 auto;gap:3rem">
+      <div>
+        <h3 style="margin-bottom:1rem;color:var(--accent)">Misyonumuz</h3>
+        <p style="color:var(--text-secondary);line-height:1.8">YolPayı, Gümüşhane ve çevre illerdeki ulaşım sorununu çözmek için geliştirilmiş akıllı bir paylaşımlı ulaşım platformudur. Amacımız; insanları birbirine bağlamak, yakıt maliyetlerini azaltmak ve karbon ayak izini küçültmektir.</p>
+        <h3 style="margin:2rem 0 1rem;color:var(--accent)">Teknoloji</h3>
+        <p style="color:var(--text-secondary);line-height:1.8">Dijkstra algoritması ile rota optimizasyonu, makine öğrenmesi tabanlı öneri sistemi ve NetworkX ile trafik analizi kullanıyoruz.</p>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-body">
+            <div class="features-grid" style="grid-template-columns:1fr 1fr;gap:1rem">
+              <div style="text-align:center;padding:1rem">
+                <div style="font-size:2rem">🚗</div>
+                <div style="font-weight:600;margin-top:0.5rem">Flask Backend</div>
+              </div>
+              <div style="text-align:center;padding:1rem">
+                <div style="font-size:2rem">🗺️</div>
+                <div style="font-weight:600;margin-top:0.5rem">Leaflet.js</div>
+              </div>
+              <div style="text-align:center;padding:1rem">
+                <div style="font-size:2rem">📊</div>
+                <div style="font-weight:600;margin-top:0.5rem">Pandas</div>
+              </div>
+              <div style="text-align:center;padding:1rem">
+                <div style="font-size:2rem">🔗</div>
+                <div style="font-weight:600;margin-top:0.5rem">NetworkX</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

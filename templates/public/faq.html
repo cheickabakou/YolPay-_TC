@@ -1,0 +1,27 @@
+{% extends "layouts/base.html" %}
+{% block title %}SSS{% endblock %}
+{% block content %}
+<div style="padding-top:84px">
+  <section class="section">
+    <div class="section-header"><h2>Sık Sorulan Sorular</h2></div>
+    <div style="max-width:700px;margin:0 auto">
+      {% set faqs = [
+        ("YolPayı nedir?", "YolPayı, Gümüşhane merkezli akıllı bir paylaşımlı ulaşım platformudur. Sürücüler yolculuklarını paylaşır, yolcular uygun fiyatlı yolculuk bulur."),
+        ("Nasıl kayıt olabilirim?", "Sağ üstteki Kayıt Ol butonuna tıklayarak e-posta adresiniz ve şifrenizle ücretsiz hesap oluşturabilirsiniz."),
+        ("Sürücü olarak yolculuk ekleyebilir miyim?", "Evet! Kayıt sırasında Sürücü rolünü seçerek yolculuk oluşturabilirsiniz."),
+        ("Ödeme nasıl yapılıyor?", "Şu an için ödeme yolculuk sırasında nakit olarak yapılmaktadır. Dijital ödeme sistemi yakında eklenecek."),
+        ("CO₂ tasarrufu nasıl hesaplanıyor?", "Her onaylı paylaşımlı yolculuk başına ortalama 2.3 kg CO₂ tasarrufu hesaplanmaktadır."),
+        ("Güvenli mi?", "Tüm kullanıcılar doğrulanmıştır. Şifreler SHA-256 ile hashlenerek saklanır."),
+      ] %}
+      {% for q, a in faqs %}
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-body">
+          <h4 style="color:var(--accent);margin-bottom:0.5rem">{{ q }}</h4>
+          <p style="color:var(--text-secondary);font-size:0.9rem">{{ a }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Yolculuklarım{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>🚗 Yolculuklarım</h1><p>Oluşturduğunuz yolculukları yönetin</p></div>
+  <a href="{{ url_for('driver.create_trip') }}" class="btn btn-primary">+ Yeni Yolculuk</a>
+</div>
+{% if trips %}
+<div class="card">
+  <div class="table-container">
+    <table>
+      <thead><tr>
+        <th>Güzergah</th><th>Tarih / Saat</th><th>Fiyat</th><th>Koltuklar</th><th>Durum</th><th>İşlem</th>
+      </tr></thead>
+      <tbody>
+        {% for trip in trips %}
+        <tr>
+          <td><strong>{{ trip.departure }}</strong> → {{ trip.destination }}</td>
+          <td>{{ trip.date }} {{ trip.time }}</td>
+          <td><span style="color:var(--accent2);font-weight:600">{{ trip.price }}₺</span></td>
+          <td>
+            <span class="badge badge-{% if trip.available_seats > 0 %}success{% else %}danger{% endif %}">{{ trip.available_seats }} boş</span>
+            {% if trip.pending_count > 0 %}<span class="badge badge-warning">{{ trip.pending_count }} bekleyen</span>{% endif %}
+          </td>
+          <td><span class="badge badge-{% if trip.status == 'active' %}success{% else %}danger{% endif %}">{{ trip.status }}</span></td>
+          <td>
+            <div style="display:flex;gap:0.4rem">
+              <a href="{{ url_for('driver.passengers', trip_id=trip.id) }}" class="btn btn-outline btn-sm">👥 Yolcular ({{ trip.confirmed }})</a>
+              <a href="{{ url_for('driver.edit_trip', trip_id=trip.id) }}" class="btn btn-outline btn-sm">✏️</a>
+              {% if trip.status == 'active' %}
+              <form method="post" action="{{ url_for('driver.delete_trip', trip_id=trip.id) }}" style="display:inline">
+                <button class="btn btn-danger btn-sm" data-confirm="Bu yolculuğu iptal etmek istiyor musunuz?">🗑️</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div style="text-align:center;padding:4rem;color:var(--text-muted)">
+  <div style="font-size:4rem;margin-bottom:1rem">🚗</div>
+  <h3>Henüz yolculuk oluşturmadınız</h3>
+  <a href="{{ url_for('driver.create_trip') }}" class="btn btn-primary" style="margin-top:1rem">İlk Yolculuğunuzu Ekleyin</a>
+</div>
+{% endif %}
+{% endblock %}

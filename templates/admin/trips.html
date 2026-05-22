@@ -1,0 +1,27 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Tüm Yolculuklar{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>🚗 Tüm Yolculuklar</h1><p>{{ trips|length }} yolculuk</p></div>
+</div>
+<div class="card">
+  <div class="table-container">
+    <table>
+      <thead><tr><th>Güzergah</th><th>Sürücü</th><th>Tarih</th><th>Fiyat</th><th>Koltuk</th><th>Rezerv.</th><th>Durum</th></tr></thead>
+      <tbody>
+        {% for trip in trips %}
+        <tr>
+          <td><strong>{{ trip.departure }}</strong> → {{ trip.destination }}</td>
+          <td>{{ trip.driver_name }}</td>
+          <td>{{ trip.date }} {{ trip.time }}</td>
+          <td style="color:var(--accent2);font-weight:600">{{ trip.price }}₺</td>
+          <td>{{ trip.available_seats }}</td>
+          <td>{{ trip.total_res }}</td>
+          <td><span class="badge badge-{% if trip.status == 'active' %}success{% else %}danger{% endif %}">{{ trip.status }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Tüm Rezervasyonlar{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>📋 Tüm Rezervasyonlar</h1></div>
+</div>
+<div class="card">
+  <div class="table-container">
+    <table>
+      <thead><tr><th>Güzergah</th><th>Yolcu</th><th>Sürücü</th><th>Tarih</th><th>Durum</th></tr></thead>
+      <tbody>
+        {% for res in reservations %}
+        <tr>
+          <td><strong>{{ res.departure }}</strong> → {{ res.destination }}</td>
+          <td>{{ res.passenger_name }}</td>
+          <td>{{ res.driver_name }}</td>
+          <td>{{ res.date }}</td>
+          <td><span class="badge badge-{% if res.status == 'confirmed' %}success{% elif res.status == 'pending' %}warning{% else %}danger{% endif %}">{{ res.status }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
