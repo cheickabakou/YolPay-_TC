@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # YolPayı 🚗 — Akıllı Paylaşımlı Ulaşım Platformu
 
 **Gümüşhane merkezli modern carpooling platformu**
@@ -53,3 +54,7 @@ YolPayi/
 - **Sürücü** — Yolculuk oluştur ve yönet
 - **Yolcu** — Yolculuk bul ve rezerve et
 - **Kent Yöneticisi** — Mobilite analizi
+=======
+# YolPay-_TC
+Kullanıcıların yolculuklarını paylaşarak daha ekonomik ve çevre dostu seyahat etmelerini sağlayan bir araç paylaşım (covoiturage) platformu.
+>>>>>>> 51d572a3b90a5902b9724ae1946115b21fa0cf49
