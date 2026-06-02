@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# YolPayı 🚗 — Akıllı Paylaşımlı Ulaşım Platformu
+# YolPayı  — Akıllı Paylaşımlı Ulaşım Platformu
 
 **Gümüşhane merkezli modern carpooling platformu**
 
@@ -22,7 +21,6 @@ Tarayıcıda aç: **http://localhost:5000**
 ## Demo Hesaplar
 
 | Rol | E-posta | Şifre |
-|-----|---------|-------|
 | Admin | admin@yolpayi.com | admin123 |
 | Sürücü | driver@yolpayi.com | driver123 |
 | Kent Yöneticisi | urban@yolpayi.com | urban123 |
@@ -54,7 +52,4 @@ YolPayi/
 - **Sürücü** — Yolculuk oluştur ve yönet
 - **Yolcu** — Yolculuk bul ve rezerve et
 - **Kent Yöneticisi** — Mobilite analizi
-=======
-# YolPay-_TC
-Kullanıcıların yolculuklarını paylaşarak daha ekonomik ve çevre dostu seyahat etmelerini sağlayan bir araç paylaşım (covoiturage) platformu.
->>>>>>> 51d572a3b90a5902b9724ae1946115b21fa0cf49
+

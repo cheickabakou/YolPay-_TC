@@ -1,10 +1,10 @@
-<<<<<<< HEAD
+
 Flask==2.3.3
 pandas==2.1.0
 networkx==3.1
 Werkzeug==2.3.7
-=======
+
 flask
 pandas
 networkx
->>>>>>> 51d572a3b90a5902b9724ae1946115b21fa0cf49
+
